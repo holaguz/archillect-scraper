@@ -8,8 +8,9 @@ import configparser
 config = configparser.ConfigParser()
 config.read('./config.cfg')
 
-archillectIndex = int(config['DEFAULT']['lastIndex'])
-
+ndx = int(config['DEFAULT']['lastIndex'])
+imgCount = int(config['DEFAULT']['imgCount'])
+baseAddress = 'http://archillect.com/'
 #minWidth = ''
 #minHeight = ''
 
@@ -17,11 +18,11 @@ if(not os.path.exists('img')): os.makedirs('img')
 
 ## initialize browser for parsing
 
-def scrapeImg(index):
+def scrapeImg(index, save):
 
 	index = str(index)
 
-	url = 'http://archillect.com/' + index
+	url = baseAddress + index
 	print('Scraping ' + url + '...')
 
 	r = requests.get(url)
@@ -30,44 +31,61 @@ def scrapeImg(index):
 	try:
 		link = tree.xpath('//*[@id="ii"]/@src')[0] 			## [0]: retrieve the first element matching the criteria
 		extIndex = link.rfind(".",0) 						## search backwards looking for the first "."
-		extention = link[extIndex:]							## retrieve the file extention
-
-		open('img/' + index + extention , 'r') 				## raise FileNotFoundError exception if the file don't exist
+		filenameExtention = link[extIndex:]							## retrieve the file filenameExtention
+		if save: open('img/' + index + filenameExtention , 'r') 				## raise FileNotFoundError exception if the file don't exist
 		return 1;
 
 	except FileNotFoundError:
 		print('Saving...')
-		saveImg(link, index, extention)
+		saveImg(link, index, filenameExtention)
 		return 1;
 
 	except IndexError:
-		#print('[ERR] Looks like '+index+' is missing.')
+		print('[ERR]: Looks like '+ baseAddress + str(index) +' is not valid.')
 		return 0;
 
-def saveImg(link, filename, extention):
-
+def saveImg(link, filename, filenameExtention):
 	img = requests.get(link) 								## load the image to memory
-
-	fileImg = open('img/' +filename + extention, 'wb')
+	fileImg = open('img/' + filename + filenameExtention, 'wb')
 	fileImg.write(img.content)
 	fileImg.close();
-def eraseFile(filename):
 
+def eraseFile(filename):
 	try:
 		path = glob.glob('img/' + str(filename) + '.*')[0]
 		os.remove(path);
 	except: pass
 
-yes = 1;
-while(yes):
+def searchLastIndex():
+	#iterate over indexes on the website
+	step = int(256);
+	index = ndx;
+	
+	while(True):
+		print("\nSearching last index... Current index: " + str(index) + " step " + str(step))
 
-	if(scrapeImg(archillectIndex) == 1):
-		archillectIndex = archillectIndex + 1
-		eraseFile(archillectIndex - 61);					## i just want to keep the last 60 imgs. TODO: add setting to cfg file
+		if(scrapeImg(index, False) == 0):  # Si el indice no es valido vuelvo hacia atras y reduzco el paso
+			index -= step
+			step = int(step/2)
+			if step == 1 : return index - imgCount
+		else: 
+			index += step;
+			print('Index is valid, continue searching')
+
+
+ndx = searchLastIndex()
+print('Found index: ' + str(ndx))
+while(True):
+	
+
+	if(scrapeImg(ndx, True) == 1):
+		ndx = ndx + 1
+		eraseFile(ndx - imgCount);
 
 	else:
-		config['DEFAULT']['lastIndex'] = str(archillectIndex)
+		config['DEFAULT']['lastIndex'] = str(ndx)
+		config['DEFAULT']['imgCount'] = str(imgCount)
 		config.write(open('./config.cfg','w'));
 		print('Quiting in 5...')
-		time.sleep(5);
+		##time.sleep(5);
 		break;
