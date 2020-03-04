@@ -50,15 +50,17 @@ def saveImg(link, filename, filenameExtention):
 	fileImg.write(img.content)
 	fileImg.close();
 
-def eraseFile(filename):
+def eraseFile():
 	try:
-		path = glob.glob('img/' + str(filename) + '.*')[0]
-		os.remove(path);
+		fileList = os.listdir(".img/")
+		os.remove(fileList[0])
+		#path = glob.glob('img/' + str(filename) + '.*')[0]
+		#os.remove(path);
 	except: pass
 
-def searchLastIndex():
+def searchIndex():
 	#iterate over indexes on the website
-	step = int(256);
+	step = imgCount;
 	index = ndx;
 	
 	while(True):
@@ -67,20 +69,23 @@ def searchLastIndex():
 		if(scrapeImg(index, False) == 0):  # Si el indice no es valido vuelvo hacia atras y reduzco el paso
 			index -= step
 			step = int(step/2)
-			if step == 1 : return index - imgCount
+			if step == 1 : return index
 		else: 
 			index += step;
-			print('Index is valid, continue searching')
+			print('Index is valid, continue search')
 
 
-ndx = searchLastIndex()
+
+
+ndx = searchIndex()
 print('Found index: ' + str(ndx))
+
 while(True):
 	
 
 	if(scrapeImg(ndx, True) == 1):
 		ndx = ndx + 1
-		eraseFile(ndx - imgCount);
+		eraseFile();
 
 	else:
 		config['DEFAULT']['lastIndex'] = str(ndx)
