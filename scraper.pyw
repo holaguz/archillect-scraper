@@ -50,10 +50,12 @@ def saveImg(link, filename, filenameExtention):
 	fileImg.write(img.content)
 	fileImg.close();
 
-def eraseFile():
+def eraseFiles():
 	try:
-		fileList = os.listdir(".img/")
-		os.remove(fileList[0])
+		fileList = os.listdir("./img")
+		while(len(fileList) > imgCount):
+			os.remove("./img/" + fileList[0])
+			fileList = os.listdir("./img")
 		#path = glob.glob('img/' + str(filename) + '.*')[0]
 		#os.remove(path);
 	except: pass
@@ -82,15 +84,15 @@ print('Found index: ' + str(ndx))
 
 while(True):
 	
-
 	if(scrapeImg(ndx, True) == 1):
 		ndx = ndx + 1
-		eraseFile();
-
+		
 	else:
 		config['DEFAULT']['lastIndex'] = str(ndx)
 		config['DEFAULT']['imgCount'] = str(imgCount)
 		config.write(open('./config.cfg','w'));
+		print("Erasing extra files...")
+		eraseFiles();
 		print('Quiting in 5...')
 		##time.sleep(5);
 		break;
