@@ -18,4 +18,4 @@ python scraper.py
 
 ## Configuration
 
-See [config.cfg]([https://github.com/holaguz/archillect-scraper/blob/master/config.cfg])
+See [config.cfg](config.cfg)
