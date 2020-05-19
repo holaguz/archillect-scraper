@@ -13,8 +13,21 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-python scraper.py
+python3 scraper.py
 ```
+
+## Scheduling
+
+### Linux
+Run ```crontab -e``` and append the command ``` python3 scraper.py```
+
+### Windows
+Run ```taskschd.msc``` create a new schedule for the file ```scraper schedule.bat```
+
+
+
+
+
 
 ## Configuration
 
