@@ -31,4 +31,4 @@ Run ```taskschd.msc``` create a new schedule for the file ```scraper schedule.ba
 
 ## Configuration
 
-See [config.cfg]([https://github.com/holaguz/archillect-scraper/blob/master/config.cfg])
+See [config.cfg](config.cfg)
