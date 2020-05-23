@@ -7,7 +7,7 @@ Keep the last images from Archillect saved in your computer.
 Install the dependencies
 
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ## Usage
