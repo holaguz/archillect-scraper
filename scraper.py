@@ -10,17 +10,31 @@ config.read('./config.cfg')
 
 ndx = int(config['DEFAULT']['lastIndex'])
 imgCount = int(config['DEFAULT']['imgCount'])
+
 baseAddress = 'http://archillect.com/'
 img_dir = "./img/"
-#minWidth = ''
-#minHeight = ''
 
 if not os.path.exists(img_dir): os.makedirs(img_dir)
 
+def searchIndex():
+	step = imgCount;
+	index = ndx;
+	ub = 1E9*index;
+	
+	while(True):
+		print("Searching last index... Current index: " + str(index) + " step " + str(step) + "... ", end='\n')
+		if scrapeImg(index) == -1:
+			ub = index
+			step = int(step / 2)
+			index -= step
+			if step == 0 : return index
+		else: 
+			if index + 2*step < ub : step = 2*step
+			if index + step >= ub: step = int(step/2)
+			index += step
+
 def scrapeImg(index):
-
 	index = str(index)
-
 	url = baseAddress + index
 	r = requests.get(url)
 	tree = html.fromstring(r.content)
@@ -30,20 +44,16 @@ def scrapeImg(index):
 		extIndex = link.rfind(".",0) 											## search backwards looking for the first "."
 		fileExtention = link[extIndex:]											## retrieve the file basetype
 		fileName = index + fileExtention
-		return fileName;
+		return (fileName, link);
 
 	except IndexError:
 		print('Looks like '+ baseAddress + str(index) +' is not valid.')
 		return -1;
 
-def saveImg(fileName):
-
-	if fileName in os.listdir(img_dir): return 0;
-
-	fileAddress = baseAddress + fileName
-	print("Saving " + fileAddress)
+def saveImg(fileName, fileAddress):
+	print("Saving " + fileName)
 	file = requests.get(fileAddress) 											## load the file to memory
-	
+		
 	with open(img_dir + fileName, 'wb') as f: 
 		f.write(file.content)
 		f.close();
@@ -57,34 +67,16 @@ def eraseFiles():
 			fileList = os.listdir("./img")
 	except: pass
 
-def searchIndex():
-
-	step = imgCount;
-	index = ndx;
-	
-	while(True):
-		print("Searching last index... Current index: " + str(index) + " step " + str(step) + "... ", end='')
-		if scrapeImg(index) == -1:  											## when the index is not valid we go backwards
-			index -= step
-			step = int(step/2)
-			if step == 0 : return index
-		else: 
-			index += step;
-			print('Index is valid, continue search')
-
-
-ndx = searchIndex()																## main loop
+ndx = searchIndex()																
 print('Found index: ' + str(ndx))
 ndx -= imgCount
 
-while(True):
-	
+while(1):
 	f = scrapeImg(ndx)
-	print('Scraping ' + baseAddress + str(ndx) + '...')
-
-	if f != -1:
-		saveImg(f)
-		ndx += 1
+	ndx += 1
+	if f!=-1:
+		print("Saving {}...".format(f[1]))
+		saveImg(f[0], f[1])
 	else:
 		print("Erasing extra files...")
 		eraseFiles();
@@ -93,6 +85,6 @@ while(True):
 		#config['DEFAULT']['imgCount'] = str(imgCount)
 		config.write(open('./config.cfg','w'));
 		
-		print('Quiting in 5...')
-		##time.sleep(5);
+		print('Shutting down...')
+		time.sleep(3);
 		break;
